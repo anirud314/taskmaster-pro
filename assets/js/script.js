@@ -62,7 +62,7 @@ $(".list-group").on("click", "p", function(){
 });
 
 var auditTask = function(taskEl) {
-  //console.log(taskEl);
+  console.log(taskEl);
   var date = $(taskEl)
     .find("span")
     .text()
@@ -78,7 +78,8 @@ var auditTask = function(taskEl) {
   else if(Math.abs(moment().diff(time, "days")) <= 2) {
     $(taskEl).addClass("list-group-item-warning");
   }
-}
+};
+
 $(".list-group").on("blur", "textarea", function(){
   // get the textarea's current value/text
   var text = $(this)
@@ -170,19 +171,25 @@ $(".card .list-group").sortable({
   scroll: false,
   tolerance: "pointer",
   helper: "clone",
-  activate: function(event){
-    console.log("activate", this);
+  activate: function(event, ui){
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
+    //console.log("activate", this);
   },
-  deactivate: function(event){
-    console.log("deactivate", this);
+  deactivate: function(event, ui){
+    $(this).removeClass("dropover");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
+    //console.log("deactivate", this);
   },
   over: function(event){
-    console.log("over", event.target);
+    $(event.target).addClass("dropover-active");
+    //console.log("over", event.target);
   },
   out: function(event){
-    console.log("out", event.target);
+    $(event.target).removeClass("dropover-active");
+    //console.log("out", event.target);
   },
-  update: function(event){
+  update: function(){
     //console.log($(this).children());
     var tempArr = [];
     $(this).children().each(function(){
@@ -246,7 +253,7 @@ $("#modalDueDate").datepicker({
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -279,4 +286,8 @@ $("#remove-tasks").on("click", function() {
 // load tasks for the first time
 loadTasks();
 
-
+setInterval(function(){
+  $(".card .list-group-item").each(function(index, el) {
+    auditTask(el);
+  });
+},(1000 * 60) * 30); //(1000 milliseconds * 60 seconds = 1 min) * 30 = 30 minutes
