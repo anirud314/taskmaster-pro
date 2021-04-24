@@ -14,6 +14,8 @@ var createTask = function(taskText, taskDate, taskList) {
   taskLi.append(taskSpan, taskP);
 
 
+  // check due date
+  auditTask(taskLi);
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
 };
@@ -59,6 +61,24 @@ $(".list-group").on("click", "p", function(){
   textInput.trigger("focus");
 });
 
+var auditTask = function(taskEl) {
+  //console.log(taskEl);
+  var date = $(taskEl)
+    .find("span")
+    .text()
+    .trim();
+  console.log(date);
+
+  var time = moment(date, "L").set("hour", 17);
+  //console.log(time);
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+  if(moment().isAfter(time)){
+    $(taskEl).addClass("list-group-item-danger");
+  }
+  else if(Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+}
 $(".list-group").on("blur", "textarea", function(){
   // get the textarea's current value/text
   var text = $(this)
@@ -101,12 +121,20 @@ $(".list-group").on("click", "span", function(){
   //swap out elements
   $(this).replaceWith(dateInput);
 
+  //enable jquery ui datepicker
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function() {
+      // when calander is closed, force a "change" event on the 'dateInput
+      $(this).trigger("change");
+    }
+  });
   //automatically focus on new element
   dateInput.trigger("focus");
 });
 
 // Value of due date was changed
-$(".list-group").on("blur","input[type='text']",function(){
+$(".list-group").on("change","input[type='text']",function(){
   //get current text
   var date = $(this)
     .val()
@@ -134,7 +162,7 @@ $(".list-group").on("blur","input[type='text']",function(){
 
   // replace input with span element
   $(this).replaceWith(taskSpan);
-
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 $(".card .list-group").sortable({
@@ -211,6 +239,10 @@ $("#task-form-modal").on("show.bs.modal", function() {
 $("#task-form-modal").on("shown.bs.modal", function() {
   // highlight textarea
   $("#modalTaskDescription").trigger("focus");
+});
+
+$("#modalDueDate").datepicker({
+  minDate: 1
 });
 
 // save button in modal was clicked
